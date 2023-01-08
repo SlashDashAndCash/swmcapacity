@@ -34,6 +34,7 @@ cd swmcapacity
 ruby swmcapacity.rb
 
 # Zeitgesteuert ausführen
+sudo loginctl enable-linger swmcapacity
 mkdir -p ~/.config/systemd/user
 cp swmcapacity.service ~/.config/systemd/user/
 cp swmcapacity.timer ~/.config/systemd/user/
@@ -47,7 +48,6 @@ systemctl start --user swmcapacity.timer
 
 ```
 sudo useradd -r -s/bin/bash -m swmcapacity
-sudo loginctl enable-linger swmcapacity
 
 # Anmelden als User swmcapacity (sudo -iu swmcapacity funktioniert nicht)
 
@@ -58,6 +58,7 @@ podman build -t swmcapacity:latest .
 podman run -v /var/run/postgresql:/var/run/postgresql -it --rm --name swmcapacity swmcapacity:latest
 
 # Zeitgesteuert ausführen
+sudo loginctl enable-linger swmcapacity
 mkdir -p ~/.config/systemd/user
 cp container-swmcapacity.service ~/.config/systemd/user/
 cp container-swmcapacity.timer ~/.config/systemd/user/
