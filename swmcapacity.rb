@@ -17,7 +17,10 @@ def fetch_capacity_items(uri_str)
   
     units = {}
     items.each do |item|
-      units[item.attributes['organization-unit-id'].content] = item.attributes['bath-name'].content
+      units[item.attributes['organization-unit-id'].content] = {
+        'name'    => item.attributes['bath-name'].content,
+        'kind_of' => item.attributes['icon-name'].content,
+      }
     end
 
     units
@@ -37,7 +40,7 @@ def fetch_capacity(items)
 
   Net::HTTP.start(uri.hostname, uri.port, :use_ssl => true) {|http|
 
-    items.each do |unit_id, unit_name|
+    items.each do |unit_id, unit_data|
       req = Net::HTTP::Get.new("/api/gates/counter?organizationUnitIds=#{unit_id}")
       req['abp-tenantid'] = tenant_id
 
@@ -48,7 +51,8 @@ def fetch_capacity(items)
         unit = JSON.parse(res.body)[0]
         capacity[unit_id] = unit
         capacity[unit_id]['requestTime'] = now
-        capacity[unit_id]['organizationUnitName'] = unit_name
+        capacity[unit_id]['organizationUnitName'] = unit_data['name']
+        capacity[unit_id]['organizationUnitKind'] = unit_data['kind_of']
         capacity[unit_id]['utilizationPercent'] = (unit['personCount'].to_f / unit['maxPersonCount'].to_f * 100.0).to_i
       else
         raise "Unable to fetch capacity of unit #{id}"
@@ -93,8 +97,12 @@ def pg_update(pg_login, capacity)
       unless unit[0]['unit_name'] == data['organizationUnitName']
         conn.exec "UPDATE units SET unit_name = \'#{data['organizationUnitName']}\' WHERE unit_id = #{unit_id}"
       end
+
+      unless unit[0]['kind_of'] == data['organizationUnitKind']
+        conn.exec "UPDATE units SET kind_of = \'#{data['organizationUnitKind']}\' WHERE unit_id = #{unit_id}"
+      end
     else
-      conn.exec "INSERT INTO units (unit_id, unit_name) VALUES (#{data['organizationUnitId']}, \'#{data['organizationUnitName']}\')"
+      conn.exec "INSERT INTO units (unit_id, unit_name, kind_of) VALUES (#{data['organizationUnitId']}, \'#{data['organizationUnitName']}\', \'#{data['organizationUnitKind']}\')"
     end
   end
 end

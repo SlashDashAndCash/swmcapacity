@@ -67,7 +67,3 @@ systemctl enable --user container-swmcapacity.timer
 systemctl start --user container-swmcapacity.timer
 ```
 
-# To-Do's
-
-- Unterscheidung zwischen Bädern, Saunen und anderen organisationUnits abrufen und in die vordefinierte Spalte kind_of schreiben.
-
