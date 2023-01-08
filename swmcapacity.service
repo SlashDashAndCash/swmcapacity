@@ -8,4 +8,5 @@ Documentation=https://github.com/SlashDashAndCash/swmcapacity
 #Environment=PG_USER=
 #Environment=PG_PASSWORD=
 ExecStart=/usr/bin/ruby /home/swmcapacity/swmcapacity/swmcapacity.rb
-Type=exec
+Type=oneshot
+
