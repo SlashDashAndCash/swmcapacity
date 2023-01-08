@@ -1,0 +1,17 @@
+[Unit]
+Description=Podman container-swmcapacity.service
+Documentation=man:podman-generate-systemd(1)
+Wants=network.target
+After=network-online.target
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+ExecStartPre=/bin/rm -f %t/container-swmcapacity.pid %t/container-swmcapacity.ctr-id
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/container-swmcapacity.pid --cidfile %t/container-swmcapacity.ctr-id --cgroups=no-conmon -it --replace -e PG_USER=swmcapacity -v /var/run/postgresql:/var/run/postgresql --name swmcapacity swmcapacity:latest
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/container-swmcapacity.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/container-swmcapacity.ctr-id
+PIDFile=%t/container-swmcapacity.pid
+Type=exec
+
+[Install]
+WantedBy=multi-user.target default.target

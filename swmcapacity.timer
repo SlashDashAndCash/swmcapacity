@@ -1,0 +1,10 @@
+[Unit]
+Description=Fetch SWM capacity
+
+[Timer]
+# DayOfWeek Year-Month-Day Hour:Minute:Second
+OnCalendar=*-*-* 7..22:4,19,34,49:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
