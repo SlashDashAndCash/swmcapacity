@@ -5,7 +5,9 @@ Auslastung der Stadtwerke München Bäder, Saunen und Eislaufbahn automatisiert 
 
 ## Installation
 
-### PostgreSQL Datenbank vorbereiten
+Das Ruby Script swmcapacity.rb kann entweder direkt ausgeführt werden oder in einem Container. Dafür gibt es zwei Installationsbeispiele. Eine PostgreSQL DB wird in beiden Fällen benötigt.
+
+### PostgreSQL Datenbank vorbereiten (Debian)
 
 ```
 sudo apt install postgresql postgresql-client

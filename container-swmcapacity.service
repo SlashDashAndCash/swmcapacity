@@ -1,8 +1,6 @@
 [Unit]
-Description=Podman container-swmcapacity.service
-Documentation=man:podman-generate-systemd(1)
-Wants=network.target
-After=network-online.target
+Description=Fetch SWM capacity
+Documentation=https://github.com/SlashDashAndCash/swmcapacity
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
@@ -13,5 +11,3 @@ ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/container-swmcapacity.c
 PIDFile=%t/container-swmcapacity.pid
 Type=exec
 
-[Install]
-WantedBy=multi-user.target default.target

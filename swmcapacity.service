@@ -1,5 +1,6 @@
 [Unit]
 Description=Fetch SWM capacity
+Documentation=https://github.com/SlashDashAndCash/swmcapacity
 
 [Service]
 #Environment=PG_DBNAME=
