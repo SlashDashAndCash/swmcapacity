@@ -67,3 +67,10 @@ systemctl enable --user container-swmcapacity.timer
 systemctl start --user container-swmcapacity.timer
 ```
 
+# Datenbankabfragen
+
+```
+# Die 30 zuletzt abfragten Auslastungen nur von Schwimmbaedern
+SELECT timestamp,name,utilization FROM swmcapacity WHERE kind = 'swim' ORDER BY timestamp DESC LIMIT 30;
+```
+

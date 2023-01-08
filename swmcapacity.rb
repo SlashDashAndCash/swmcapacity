@@ -76,7 +76,8 @@ end
 
 def pg_update(pg_login, capacity)
   conn = PG.connect(pg_login)
- 
+
+  # Tabelle zur Uebersetzung der Unit IDs in die Namen der Baeder, Saunen und Eislaufbahnen
   unless pg_table_exist?(conn, 'units')
     conn.exec 'CREATE TABLE units (unit_id INT PRIMARY KEY, unit_name VARCHAR(127), kind_of VARCHAR(63))'
   end
@@ -86,6 +87,7 @@ def pg_update(pg_login, capacity)
   capacity.each do |unit_id, data|
     table = "unit_#{unit_id}"
 
+    # Fuer jede Einrichtung (Unit) eine eigene Tabelle fuer die zeitliche Auslastung anlegen
     unless pg_table_exist?(conn, table)
       conn.exec "CREATE TABLE #{table} (timestamp TIMESTAMPTZ PRIMARY KEY, unit_id INT NOT NULL, utilization_percent INT, person_count INT, max_person_count INT)"
     end
@@ -95,16 +97,29 @@ def pg_update(pg_login, capacity)
     unit = units.select {|row| row['unit_id'] == unit_id.to_s }
     if unit.size == 1
       unless unit[0]['unit_name'] == data['organizationUnitName']
+        # Namen der Einrichtung (Unit) in der Uebersetzungstabelle aendern falls oder anders als bei der letzten Abfrage
         conn.exec "UPDATE units SET unit_name = \'#{data['organizationUnitName']}\' WHERE unit_id = #{unit_id}"
       end
 
       unless unit[0]['kind_of'] == data['organizationUnitKind']
+        # Art der Einrichtung (Bad, Sauna, Eislaufbahn) aendern falls anders als bei der letzten Abfrage
         conn.exec "UPDATE units SET kind_of = \'#{data['organizationUnitKind']}\' WHERE unit_id = #{unit_id}"
       end
     else
+      # Neue Einrichtung hinzufuegen
       conn.exec "INSERT INTO units (unit_id, unit_name, kind_of) VALUES (#{data['organizationUnitId']}, \'#{data['organizationUnitName']}\', \'#{data['organizationUnitKind']}\')"
     end
   end
+
+  
+  # Die Tabellen der einzelnen Einrichtungen zu einer einzigen View zusammen fassen
+  unit_tables = capacity.keys.map {|unit| "unit_#{unit}"}
+  view_union = "CREATE OR REPLACE VIEW swmcapacity_union AS SELECT * FROM #{unit_tables[0]}"
+    unit_tables[1..-1].each {|table| view_union += " UNION SELECT * FROM #{table}"}
+  conn.exec view_union
+
+  # Eine kompakte View zur einfachen Abfrage
+  conn.exec "CREATE OR REPLACE VIEW swmcapacity AS SELECT c.timestamp AS timestamp,c.unit_id AS id,u.kind_of AS kind,u.unit_name AS name,c.utilization_percent AS utilization FROM swmcapacity_union c, units u WHERE c.unit_id = u.unit_id"
 end
 
 items = fetch_capacity_items('https://www.swm.de/baeder/schwimmen-sauna/auslastung')
